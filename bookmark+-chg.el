@@ -6,9 +6,9 @@
 ;; Maintainer: Drew Adams (concat "drew.adams" "@" "oracle" ".com")
 ;; Copyright (C) 2000-2013, Drew Adams, all rights reserved.
 ;; Created: Fri Sep 15 07:58:41 2000
-;; Last-Updated: Fri Apr 26 12:25:42 2013 (-0700)
+;; Last-Updated: Wed Jul 24 07:46:23 2013 (-0700)
 ;;           By: dradams
-;;     Update #: 15291
+;;     Update #: 15391
 ;; URL: http://www.emacswiki.org/bookmark+-chg.el
 ;; Doc URL: http://www.emacswiki.org/BookmarkPlus
 ;; Keywords: bookmarks, bookmark+
@@ -146,6 +146,51 @@
  
 ;;;(@* "CHANGE LOG FOR `bookmark+-1.el'")
 ;;
+;; 2013/07/24 dadams
+;;     bmkp-new-bookmark-default-names, bookmark-make-record-default:
+;;       Test using (region-beginning|end), not mark function (C code and simpler).
+;; 2013/07/11 dadams
+;;     bmkp-url-target-set: Use let* with backquote lambda instead of lexical-let*.
+;; 2013/07/02 dadams
+;;     bmkp-snippet-bookmark-p: Typo: bmkp-snippet-to-kill-ring -> bmkp-jump-snippet.
+;;     bmkp-bookmark-description: Include snippet text in bookmark description (help).
+;; 2013/07/01 dadams
+;;     bookmark-make-record-default: Fixed typo for end-position (listify).
+;;     bmkp-set-snippet-bookmark: Prefix arg now prompts for bookmark name.
+;; 2013/06/30 dadams
+;;     Added: bmkp-set-snippet-bookmark, bmkp-snippet-to-kill-ring, bmkp-jump-snippet,
+;;            bmkp-snippet-alist-only, bmkp-snippet-bookmark-p, bmkp-snippet-history.
+;;     bmkp-autotemp-bookmark-predicates, bmkp-types-alist, bmkp-bookmark-type,
+;;       bmkp-bookmark-description:
+;;         Cover snippet bookmarks too.
+;;     bookmark-make-record-default:
+;;       Added optional arg NO-REGION.  If non-nil then do not include end-position.
+;;       Set NO-CONTEXT to nil for Emacs < 24.  Do not calculate FCS, RCS, FCRS, ECRS if NO-CONTEXT.
+;;     bmkp-make-(gnus|sequence|desktop|bookmark-file|variable-list)-record:
+;;       Pass NO-REGION to bookmark-make-record-default.
+;; 2013/06/29 dadams
+;;     Added: bmkp-read-regexp, bmkp-find-tag-default-as-regexp.
+;;     Use bmkp-read-regexp, not read-string, everywhere for reading a regexp.
+;;     bmkp-bookmark-description: Ensure FILE is non-nil before using it.
+;; 2013/06/10 dadams
+;;     bmkp-set-sequence-bookmark: Typo - bookmark-get-bookmarkp -> bookmark-get-bookmark.
+;; 2013/06/02 dadams
+;;     bmkp-set-sequence-bookmark: Forgot to bind FUN.  Thx to Michael Heerdegen.
+;; 2013/05/31 dadams
+;;     bmkp-save-menu-list-state: Display warning, do not raise error, if write-file fails.
+;;     bookmark-write-file: Use display-warning, if fboundp.
+;; 2013/05/28 dadams
+;;     Renamed: bmkp-edit-bookmark-name-and-file to bmkp-edit-bookmark-name-and-location.
+;;     bmkp-edit-bookmark-name-and-location: Handle location property, urls.
+;;     bmkp-jump-w3m-new-session, bmkp-jump-w3m-only-one-tab: Use location property, not filename.
+;;     Thx to Michael Heerdegen.
+;; 2013/05/15 dadams
+;;     bmkp-*-alist-only: Make sure we call bookmark-maybe-load-default-file.
+;;     Moved bmkp-string-match-p to bookmark+-bmu.el.
+;;     Use bmkp-string-match-p instead of string-match wherever appropriate.
+;; 2013/05/12 dadams
+;;     Added: bmkp-write-bookmark-file-hook.
+;;     bookmark-write-file: Run bmkp-bookmark-write-file-hook functions after writing.
 ;; 2013/04/19 dadams
 ;;     bookmark-exit-hook-internal: Removed test for non-empty bookmark-alist (Emacs bug #13972).
 ;; 2013/04/15 dadams
@@ -899,6 +944,28 @@
  
 ;;;(@* "CHANGE LOG FOR `bookmark+-bmu.el'")
 ;;
+;; 2013/07/02 dadams
+;;     Added to menu-bar Edit menu: bmkp-set-snippet-bookmark, bmkp-snippet-to-kill-ring.
+;; 2013/06/30 dadams
+;;     Added: bmkp-snippet, bmkp-bmenu-show-only-snippets, bmkp-bmenu-mark-snippet-bookmarks.
+;;     bookmark-bmenu-list: Added snippet info to doc string.
+;;     bmkp-bmenu-mode-status-help: Cover snippets too.
+;;     Bind bmkp-bmenu-(mark-snippet-bookmarks|show-only-snippets) to w M, w S.  Add to menus.
+;; 2013/06/29 dadams
+;;     bmkp-bmenu-regexp-mark, bmkp-bmenu-search-marked-bookmarks-regexp,
+;;       bmkp-bmenu-(un)mark-bookmarks-tagged-regexp:
+;;         Use bmkp-read-regexp in interactive spec.
+;;     bmkp-bmenu-mode-status-help: Ensure that we have a supported image before calling insert-image.
+;; 2013/06/09 dadams
+;;     bmkp-bmenu-mode-line-string: Added missing let-binding for REGEXP.
+;;     Added vacuous defvars to suppress free-var warnings.
+;; 2013/05/28 dadams
+;;     Renamed: bmkp-bmenu-edit-bookmark-name-and-file to bmkp-bmenu-edit-bookmark-name-and-location.
+;; 2013/05/28 dadams
+;;     bmkp-bmenu-list-1: Do not call put-image if create-image returns nil.
+;; 2013/05/15 dadams
+;;     Moved here from bookmark+-1.el: bmkp-string-match-p.
+;;     Use bmkp-string-match-p instead of string-match wherever appropriate.
 ;; 2013/04/10 dadams
 ;;     bmkp-bmenu-make-sequence-from-marked: Redefine using bmkp-set-sequence-bookmark (new).
 ;; 2013/01/07 dadams
@@ -1285,6 +1352,12 @@
  
 ;;;(@* "CHANGE LOG FOR `bookmark+-key.el'")
 ;;
+;; 2013/07/20 dadams
+;;     Moved items to new submenus: New/Update and Delete.
+;; 2013/06/30 dadams
+;;     Bind bmkp-set-snippet-bookmark to C-x p M-w, bmkp-snippet-to-kill-ring to C-x j M-w.
+;; 2013/05/28 dadams
+;;     Applied renaming of bmkp-edit-bookmark-name-and-file to bmkp-edit-bookmark-name-and-location.
 ;; 2013/04/15 dadams
 ;;     In bmkp-set-map: Bind F to bmkp-make-function-bookmark (C-x p c F).
 ;;                      Bind C-k to bmkp-wrap-bookmark-with-last-kbd-macro (C-x p c C-k).
@@ -1378,6 +1451,10 @@
  
 ;;;(@* "CHANGE LOG FOR `bookmark+-lit.el'")
 ;;
+;; 2013/06/09 dadams
+;;     Added vacuous defvars to suppress free-var warnings.
+;; 2013/05/15 dadams
+;;     Use bmkp-string-match-p instead of string-match wherever appropriate.
 ;; 2012/10/09 dadams
 ;;     Made all autoload cookies explicitly load bookmark+.el(c).  Should help ELPA (e.g. MELPA).
 ;; 2012/09/22 dadams
