@@ -35,9 +35,6 @@ test:		build cleantest
 			$(CASK) exec ert-runner -L $(LISP_DIR) ; \
 		fi
 
-.PHONY:		tmp
-tmp:		$(DOC_DIR)
-
 $(DOC_DIR):
 		mkdir -p $(DOC_DIR)
 		@if [ -f README.md ] ; then \
